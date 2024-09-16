@@ -30,18 +30,8 @@ public class SecurityConfig  {
     UserDetailsService userDetailsService;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests((authorize) -> {
-                    authorize.requestMatchers("/api/**").permitAll();
-                    authorize.requestMatchers("/products/**").hasRole("USER");
-                    authorize.requestMatchers("/purchases/**").hasRole("ADMIN");
-                    authorize.anyRequest().authenticated();
-                })
-                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll);
-
-        return http.build();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
     @Bean
@@ -50,8 +40,33 @@ public class SecurityConfig  {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http.csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests((authorize) -> {
+                    authorize.requestMatchers("/auth/**").permitAll();
+                    authorize.requestMatchers("/products/**").hasRole("USER");
+                    authorize.requestMatchers("/purchases/**").hasRole("ADMIN");
+                    authorize.anyRequest().authenticated();
+                });
+                //.formLogin(AbstractAuthenticationFilterConfigurer::permitAll);
+
+        return http.build();
     }
+
+
+
+    /*@Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
+    }*/
+
+
 
 }

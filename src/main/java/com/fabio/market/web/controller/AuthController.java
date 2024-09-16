@@ -38,9 +38,11 @@ public class AuthController {
         try {
             Log log = LogFactory.getLog(getClass());
             log.info("######### AuthController");
+            log.info(request);
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
             UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
             String jwt = jwtUtil.generateToken(userDetails);
+            //String jwt = "jwt.....";
             return  new ResponseEntity<>(new AuthenticationResponse(jwt), HttpStatus.OK);
 
         }catch (BadCredentialsException e){
