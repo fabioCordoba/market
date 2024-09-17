@@ -1,6 +1,7 @@
 package com.fabio.market.web.security;
 
 import com.fabio.market.domain.service.UserDetailsService;
+import com.fabio.market.web.security.filter.JwtFilterRequest;
 import org.apache.naming.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +30,9 @@ public class SecurityConfig  {
 
     @Autowired
     UserDetailsService userDetailsService;
+
+    @Autowired
+    private JwtFilterRequest jwtFilterRequest;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
@@ -46,12 +51,16 @@ public class SecurityConfig  {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorize) -> {
                     authorize.requestMatchers("/auth/**").permitAll();
+                    authorize.requestMatchers("/swagger-ui/**").permitAll();
+                    authorize.requestMatchers("/v3/api-docs/**").permitAll();  // Para la documentación de API
+                    authorize.requestMatchers("/swagger-resources/**").permitAll();
                     authorize.requestMatchers("/products/**").hasRole("USER");
                     authorize.requestMatchers("/purchases/**").hasRole("ADMIN");
                     authorize.anyRequest().authenticated();
                 });
                 //.formLogin(AbstractAuthenticationFilterConfigurer::permitAll);
 
+        http.addFilterBefore(jwtFilterRequest, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

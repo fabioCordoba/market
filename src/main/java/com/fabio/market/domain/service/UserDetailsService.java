@@ -23,7 +23,7 @@ public class UserDetailsService implements org.springframework.security.core.use
 
         Log log = LogFactory.getLog(getClass());
         log.info("######### userDetails");
-        User user = new User("fabio", "$2a$12$wSZQNiRGGWjnfV6G0K0OAutjQP0Rl9yvku/4ZKPTglxqmybLDBHN6", authorities );
+        User user = new User("userTest", "$2a$12$wSZQNiRGGWjnfV6G0K0OAutjQP0Rl9yvku/4ZKPTglxqmybLDBHN6", authorities );
         log.info(user);
         return user;
     }
