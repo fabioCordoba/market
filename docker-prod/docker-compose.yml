@@ -1,0 +1,39 @@
+version: "3.7"
+
+services:
+  market-postgres-db:
+    image: postgres:14.3
+    container_name: market-postgres-db
+    restart: always
+    environment:
+      POSTGRES_DB: platzi-market
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: db_password
+    ports:
+      - 5434:5432
+    depends_on:
+      - app
+    networks:
+      - app-market-network
+    volumes:
+      - dbdata2:/var/lib/postgresql/data
+
+  app:
+    image: fabiocordobadev/personal:sb-market-app
+    container_name: market-app
+    restart: always
+    environment:
+      PORT: 80
+      SPRING_DATASOURCE_URL: jdbc:postgresql://market-postgres-db:5432/platzi-market
+      SPRING_DATASOURCE_USERNAME: db_user
+      SPRING_DATASOURCE_PASSWORD: db_password
+    ports:
+      - 8030:80
+    networks:
+      - app-market-network
+
+networks:
+  app-market-network:
+
+volumes:
+  dbdata2:
