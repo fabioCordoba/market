@@ -2,10 +2,15 @@ package com.fabio.market.web.security;
 
 import com.fabio.market.domain.service.UserDetailsService;
 import com.fabio.market.web.security.filter.JwtFilterRequest;
+
+import java.util.Arrays;
+
 import org.apache.naming.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -23,6 +28,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -45,37 +54,60 @@ public class SecurityConfig  {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http.csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests((authorize) -> {
-                    authorize.requestMatchers("/auth/**").permitAll();
-                    authorize.requestMatchers("/swagger-ui/**").permitAll();
-                    authorize.requestMatchers("/v3/api-docs/**").permitAll();  // Para la documentación de API
-                    authorize.requestMatchers("/swagger-resources/**").permitAll();
-                    authorize.requestMatchers("/products/**").hasRole("USER");
-                    authorize.requestMatchers("/purchases/**").hasRole("ADMIN");
-                    authorize.anyRequest().authenticated();
-                });
+        return http.authorizeHttpRequests((authorize) -> authorize
+                    .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers("/swagger-ui/**").permitAll()
+                    .requestMatchers("/v3/api-docs/**").permitAll() // Para la documentación de API
+                    .requestMatchers("/swagger-resources/**").permitAll()
+                    .requestMatchers("/products/**").hasRole("USER")
+                    .requestMatchers("/purchases/**").hasRole("ADMIN")
+                    .anyRequest().authenticated())
+                    .addFilterBefore(jwtFilterRequest, UsernamePasswordAuthenticationFilter.class)
+                    .csrf(config -> config.disable())
+                    .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).build();
+
+
                 //.formLogin(AbstractAuthenticationFilterConfigurer::permitAll);
 
-        http.addFilterBefore(jwtFilterRequest, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
+        // http
+        //         .authorizeHttpRequests((authorize) -> {
+        //             authorize.requestMatchers("/auth/**").permitAll();
+        //             authorize.requestMatchers("/swagger-ui/**").permitAll();
+        //             authorize.requestMatchers("/v3/api-docs/**").permitAll();  // Para la documentación de API
+        //             authorize.requestMatchers("/swagger-resources/**").permitAll();
+        //             authorize.requestMatchers("/products/**").hasRole("USER");
+        //             authorize.requestMatchers("/purchases/**").hasRole("ADMIN");
+        //             authorize.anyRequest().authenticated();
+        //         })
+        //         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        //         //.formLogin(AbstractAuthenticationFilterConfigurer::permitAll);
+
+        // http.addFilterBefore(jwtFilterRequest, UsernamePasswordAuthenticationFilter.class);
+        // return http.build();
     }
 
+     @Bean
+    CorsConfigurationSource corsConfigurationSource(){
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(Arrays.asList("*"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        config.setAllowCredentials(true);
 
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
-    /*@Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-
-        return authProvider;
-    }*/
-
-
+    @Bean
+    FilterRegistrationBean<CorsFilter> corsFilter() {
+        FilterRegistrationBean<CorsFilter> corsBean = new FilterRegistrationBean<>(
+                new CorsFilter(corsConfigurationSource()));
+        corsBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return corsBean;
+    }
 
 }
