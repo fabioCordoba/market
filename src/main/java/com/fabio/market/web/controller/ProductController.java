@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class ProductController {
     private ProductService productService;
 
     @Operation(summary = "Product All", description = "Get All supermarket products.", tags = { "products" })
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/all")
     public ResponseEntity<List<Product>> getAll(){
         return new ResponseEntity<>(productService.getAll(), HttpStatus.OK);
@@ -36,6 +38,7 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "OKI"),
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/{productId}")
     public ResponseEntity<Product> getProduct(@Parameter(description = "The id of the product", required = true, example = "7") @PathVariable("productId") int productId){
         return productService.getProduct(productId)
@@ -44,6 +47,7 @@ public class ProductController {
     }
 
     @Operation(summary = "Products by category", description = "List all products in a category", tags = { "products" })
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<Product>> getByCategory(@Parameter(description = "The id of the category", required = true, example = "1") @PathVariable("categoryId") int categoryId){
         return productService.getByCategory(categoryId)
@@ -52,6 +56,7 @@ public class ProductController {
     }
 
     @Operation(summary = "Save product", description = "save a product", tags = { "products" })
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping("/save")
     public ResponseEntity<Product> save(@RequestBody  Product product){
         return new ResponseEntity<>(productService.save(product), HttpStatus.CREATED);
@@ -59,6 +64,7 @@ public class ProductController {
 
     @Operation(summary = "Delete products", description = "Delete a product by ID", tags = { "products" })
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "404", description = "Product not found")

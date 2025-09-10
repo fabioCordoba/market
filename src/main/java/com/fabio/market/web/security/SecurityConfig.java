@@ -16,6 +16,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer;
@@ -34,7 +35,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
-@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig  {
 
     @Autowired
@@ -61,8 +62,6 @@ public class SecurityConfig  {
                     .requestMatchers("/swagger-ui/**").permitAll()
                     .requestMatchers("/v3/api-docs/**").permitAll() // Para la documentación de API
                     .requestMatchers("/swagger-resources/**").permitAll()
-                    .requestMatchers("/products/**").hasRole("USER")
-                    .requestMatchers("/purchases/**").hasRole("ADMIN")
                     .anyRequest().authenticated())
                     .addFilterBefore(jwtFilterRequest, UsernamePasswordAuthenticationFilter.class)
                     .csrf(config -> config.disable())
@@ -72,21 +71,6 @@ public class SecurityConfig  {
 
                 //.formLogin(AbstractAuthenticationFilterConfigurer::permitAll);
 
-        // http
-        //         .authorizeHttpRequests((authorize) -> {
-        //             authorize.requestMatchers("/auth/**").permitAll();
-        //             authorize.requestMatchers("/swagger-ui/**").permitAll();
-        //             authorize.requestMatchers("/v3/api-docs/**").permitAll();  // Para la documentación de API
-        //             authorize.requestMatchers("/swagger-resources/**").permitAll();
-        //             authorize.requestMatchers("/products/**").hasRole("USER");
-        //             authorize.requestMatchers("/purchases/**").hasRole("ADMIN");
-        //             authorize.anyRequest().authenticated();
-        //         })
-        //         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        //         //.formLogin(AbstractAuthenticationFilterConfigurer::permitAll);
-
-        // http.addFilterBefore(jwtFilterRequest, UsernamePasswordAuthenticationFilter.class);
-        // return http.build();
     }
 
      @Bean

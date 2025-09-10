@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  app:
+    image: fabiocordobadev/personal:sb-market-app
+    container_name: market-app
+    restart: always
+    environment:
+      PORT: 80
+      SPRING_DATASOURCE_URL: jdbc:postgresql://157.230.0.185:5432/platzi_market
+      SPRING_DATASOURCE_USERNAME: fcordoba
+      SPRING_DATASOURCE_PASSWORD: bxkqkhp7hp66mwt
+    ports:
+      - 8030:80

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,12 +24,14 @@ public class PurchaseController {
     private PurchaseService purchaseService;
 
     @Operation(summary = "Purchase All", description = "Get All supermarket purchases.", tags = { "purchases" })
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/all")
     public ResponseEntity<List<Purchase>>getAll(){
         return  new ResponseEntity<>(purchaseService.getAll(), HttpStatus.OK);
     }
 
     @Operation(summary = "Purchase by client", description = "Get Purchase by client id.", tags = { "purchases" })
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/client/{idClient}")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "OK"),
@@ -41,6 +44,7 @@ public class PurchaseController {
     }
 
     @Operation(summary = "Save purchase", description = "save a purchase", tags = { "purchases" })
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping("/save")
     public ResponseEntity<Purchase>save(@RequestBody Purchase purchase){
         return new ResponseEntity<>(purchaseService.save(purchase), HttpStatus.OK);
